@@ -1,0 +1,17 @@
+# Virtual Environment
+venv/
+env/
+ENV/
+
+# Python Cache
+__pycache__/
+*.pyc
+
+# macOS metadata
+.DS_Store
+
+# Local secrets & environment variables
+.env
+
+# Editor settings (optional personal configs)
+.vscode/
