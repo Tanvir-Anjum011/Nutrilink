@@ -5,11 +5,12 @@ from datetime import datetime, timedelta
 # App Configuration
 st.set_page_config(page_title="Nutrilink | Surplus Food Network", layout="wide")
 
-# Custom CSS — Lato Font
+# Custom CSS — Lato Font (Fixed to protect Streamlit UI icons)
 st.markdown("""
 <link href="https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700;900&display=swap" rel="stylesheet">
 <style>
-    html, body, [class*="st-"], .stApp, p, h1, h2, h3, h4, h5, h6, label, div {
+    /* Target only text tags. Avoid targeting divs or classes to prevent breaking Material Icons */
+    p, h1, h2, h3, h4, h5, h6, li, label, .stMarkdown {
         font-family: 'Lato', sans-serif !important;
     }
 </style>
@@ -196,7 +197,7 @@ if role == "Vendor":
 elif role == "Receiver":
     st.header("Receiver Marketplace")
     
-    # 4. Filter bar
+    # Filter bar
     st.subheader("Search & Filter Options")
     f_col1, f_col2, f_col3 = st.columns(3)
     with f_col1:
@@ -259,17 +260,17 @@ elif role == "Receiver":
                     
                 with col2:
                     if item['status'] == "Urgent":
-                        st.markdown("**Status: Urgent (< 1h)**")
+                        st.markdown("**Status: 🔴 Urgent (< 1h)**")
                     elif item['status'] == "Discounted":
-                        st.markdown("**Status: Discounted**")
+                        st.markdown("**Status: 🟡 Discounted**")
                     else:
-                        st.markdown("**Status: Available**")
+                        st.markdown("**Status: 🟢 Available**")
                     
                     st.markdown(f"**Available Portions:** {item['quantity']}")
-                    st.markdown(f"**Price:** {item['price']} BDT")
+                    st.markdown(f"**Price:** ৳ {item['price']}")
                     
                 with col3:
-                    with st.expander("Claim Batch"):
+                    with st.expander("Claim Batch", expanded=False):
                         claim_qty = st.number_input("Portions to claim", min_value=1, max_value=item['quantity'], value=1, key=f"qty_{item['batch_id']}")
                         if st.button("Confirm Claim", type="primary", key=f"claim_{item['batch_id']}", use_container_width=True):
                             # Process Claim
@@ -281,7 +282,7 @@ elif role == "Receiver":
                             new_claim = {
                                 "claim_id": len(st.session_state.claims) + 1,
                                 "batch_id": item["batch_id"],
-                                "receiver_id": 1, # Default mock receiver
+                                "receiver_id": 1, 
                                 "claimed_quantity": claim_qty,
                                 "total_price": claim_qty * item["price"],
                                 "claim_timestamp": datetime.now(),
