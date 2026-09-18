@@ -3,7 +3,16 @@ import pandas as pd
 from datetime import datetime, timedelta
 
 # App Configuration
-st.set_page_config(page_title="Nutrilink | Surplus Food Network", page_icon="🌱", layout="wide")
+st.set_page_config(page_title="Nutrilink | Surplus Food Network", layout="wide")
+
+# Custom CSS for Professional Font
+st.markdown("""
+<style>
+    html, body, [class*="st-"], .stApp {
+        font-family: 'Inter', 'Segoe UI', Roboto, Helvetica, Arial, sans-serif !important;
+    }
+</style>
+""", unsafe_allow_html=True)
 
 # --- Helper Functions for Mock Data ---
 def initialize_mock_data():
@@ -91,7 +100,7 @@ def update_batch_statuses():
 update_batch_statuses()
 
 # --- Main Header ---
-st.title("🌱 Nutrilink: Surplus Food Redistribution")
+st.title("Nutrilink: Surplus Food Redistribution")
 st.caption("Reducing food waste through localized, real-time networking.")
 st.divider()
 
@@ -116,17 +125,17 @@ st.divider()
 # --- 2. Role Switcher in Sidebar ---
 st.sidebar.title("Navigation")
 role = st.sidebar.radio("Select View:", [
-    "🏪 Commercial Donor (Vendor Portal)",
-    "🤝 Charity / Receiver (Marketplace)",
-    "🔍 Database Inspector (Sir / Evaluator Mode)"
+    "Vendor Portal",
+    "Receiver Marketplace",
+    "Database Inspector"
 ])
 
 def get_vendor(vendor_id):
     return next((v for v in st.session_state.vendors if v["vendor_id"] == vendor_id), None)
 
 # --- Views ---
-if role == "🏪 Commercial Donor (Vendor Portal)":
-    st.header("🏪 Commercial Donor Portal")
+if role == "Vendor Portal":
+    st.header("Vendor Portal")
     st.write("Post surplus inventory to immediately notify nearby charities.")
     
     with st.form("donor_entry_form", clear_on_submit=True):
@@ -179,11 +188,11 @@ if role == "🏪 Commercial Donor (Vendor Portal)":
                     "batch_status": "Available"
                 }
                 st.session_state.batches.append(new_batch)
-                st.toast("✅ Batch listed successfully!")
+                st.toast("Batch listed successfully!")
                 st.success(f"Success! {portions} portions of '{item_name}' have been listed and charities in {zone} notified.")
 
-elif role == "🤝 Charity / Receiver (Marketplace)":
-    st.header("🤝 Receiver Marketplace")
+elif role == "Receiver Marketplace":
+    st.header("Receiver Marketplace")
     
     # 4. Filter bar
     st.subheader("Search & Filter Options")
@@ -244,15 +253,15 @@ elif role == "🤝 Charity / Receiver (Marketplace)":
                 col1, col2, col3 = st.columns([3, 2, 2])
                 with col1:
                     st.markdown(f"#### {item['item_name']}")
-                    st.caption(f"🏪 {item['vendor_name']} | 📍 {item['zone']}")
+                    st.caption(f"Provider: {item['vendor_name']} | Zone: {item['zone']}")
                     
                 with col2:
                     if item['status'] == "Urgent":
-                        st.markdown("🚨 **Urgent (< 1h)**")
+                        st.markdown("**Status: Urgent (< 1h)**")
                     elif item['status'] == "Discounted":
-                        st.markdown("🟡 **Discounted**")
+                        st.markdown("**Status: Discounted**")
                     else:
-                        st.markdown("🟢 **Available**")
+                        st.markdown("**Status: Available**")
                     
                     st.markdown(f"**Available Portions:** {item['quantity']}")
                     st.markdown(f"**Price:** {item['price']} BDT")
@@ -277,12 +286,12 @@ elif role == "🤝 Charity / Receiver (Marketplace)":
                                 "claim_status": "Reserved"
                             }
                             st.session_state.claims.append(new_claim)
-                            st.toast(f"Successfully claimed {claim_qty} portions!", icon="🤝")
+                            st.toast(f"Successfully claimed {claim_qty} portions!")
                             st.balloons()
                             st.rerun()
 
-elif role == "🔍 Database Inspector (Sir / Evaluator Mode)":
-    st.header("🔍 Database Inspector")
+elif role == "Database Inspector":
+    st.header("Database Inspector")
     st.write("Real-time view of internal data structures mirroring the relational schema.")
     
     t1, t2, t3, t4 = st.tabs(["vendors", "receivers", "food_batches", "claims"])
