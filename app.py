@@ -5,82 +5,89 @@ from datetime import datetime, timedelta
 # App Configuration
 st.set_page_config(page_title="Nutrilink | Surplus Food Network", layout="wide")
 
-# Custom CSS — Eco-Green Theme & Cool Animations
+# Custom CSS — Enterprise SaaS Theme (Sleek, Modern, No Emojis)
 st.markdown("""
 <link href="https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700;900&display=swap" rel="stylesheet">
 <style>
-    /* 1. Safe Typography Targeting */
+    /* Typography */
     p, h1, h2, h3, h4, h5, h6, li, label, .stMarkdown, .stText {
         font-family: 'Lato', sans-serif !important;
     }
     
-    /* 2. Gradient Headers & Entrance Animation */
-    h1, h2 {
-        background: -webkit-linear-gradient(45deg, #2ecc71, #27ae60);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
+    /* Professional Header Styling */
+    h1 {
+        color: #1e293b !important;
         font-weight: 900 !important;
-        animation: fadeInDown 0.8s ease-out;
+        letter-spacing: -0.5px;
+        animation: fadeInDown 0.6s ease-out;
     }
 
-    /* 3. Glowing KPI Numbers */
+    /* Modern KPI Metrics */
     [data-testid="stMetricValue"] {
-        color: #2ecc71 !important;
-        text-shadow: 0 0 15px rgba(46, 204, 113, 0.4);
-        animation: popIn 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+        color: #059669 !important; /* Emerald Green */
+        font-weight: 800 !important;
+        animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+    }
+    [data-testid="stMetricLabel"] {
+        font-weight: 600 !important;
+        color: #64748b !important; /* Slate Gray */
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        font-size: 0.75rem !important;
     }
 
-    /* 4. Animated Food Batch Cards (Hover Lift & Shadow) */
+    /* Minimalist Dashboard Cards */
     [data-testid="stVerticalBlockBorderWrapper"] {
-        border-left: 4px solid #27ae60 !important;
-        border-radius: 8px !important;
-        transition: all 0.3s ease-in-out !important;
-        background-color: rgba(46, 204, 113, 0.02);
+        border: 1px solid #e2e8f0 !important;
+        border-left: 4px solid #059669 !important;
+        border-radius: 6px !important;
+        background-color: #ffffff !important;
+        transition: all 0.25s ease-in-out !important;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.05) !important;
     }
     [data-testid="stVerticalBlockBorderWrapper"]:hover {
-        transform: scale(1.02) translateY(-4px) !important;
-        box-shadow: 0 12px 24px rgba(46, 204, 113, 0.15) !important;
-        border-color: #2ecc71 !important;
+        transform: translateY(-2px) !important;
+        box-shadow: 0 10px 15px -3px rgba(0,0,0,0.05), 0 4px 6px -2px rgba(0,0,0,0.025) !important;
+        border-color: #0ea5e9 !important; /* Subtle blue shift on hover */
     }
 
-    /* 5. Animated Primary Buttons */
+    /* Enterprise Buttons */
     .stButton > button[kind="primary"] {
-        background: linear-gradient(90deg, #27ae60, #2ecc71) !important;
+        background-color: #0f172a !important; /* Corporate Navy/Slate */
         border: none !important;
         color: white !important;
-        font-weight: 800 !important;
-        letter-spacing: 1px;
-        transition: all 0.3s ease !important;
+        font-weight: 700 !important;
+        border-radius: 4px !important;
+        transition: all 0.2s ease !important;
     }
     .stButton > button[kind="primary"]:hover {
-        box-shadow: 0 0 20px rgba(46, 204, 113, 0.6) !important;
-        transform: translateY(-2px) !important;
-        color: white !important;
+        background-color: #334155 !important;
+        box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1) !important;
     }
 
-    /* 6. Custom Keyframe Animations */
+    /* Keyframe Animations */
     @keyframes fadeInDown {
-        from { opacity: 0; transform: translateY(-20px); }
+        from { opacity: 0; transform: translateY(-10px); }
         to { opacity: 1; transform: translateY(0); }
     }
     @keyframes popIn {
-        from { opacity: 0; transform: scale(0.5); }
+        from { opacity: 0; transform: scale(0.95); }
         to { opacity: 1; transform: scale(1); }
     }
-    @keyframes pulseGlow {
-        0% { opacity: 1; }
-        50% { opacity: 0.5; }
-        100% { opacity: 1; }
-    }
     
-    /* 7. Custom HTML Badges */
-    .badge-green {
-        color: #2ecc71; font-weight: 800; letter-spacing: 0.5px;
+    /* Professional UI Badges (Pill format) */
+    .badge {
+        display: inline-block;
+        padding: 0.25em 0.75em;
+        font-size: 0.75rem;
+        font-weight: 700;
+        border-radius: 9999px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
     }
-    .badge-urgent {
-        color: #e67e22; font-weight: 800; letter-spacing: 0.5px;
-        animation: pulseGlow 1.5s infinite;
-    }
+    .badge-available { background-color: #dcfce7; color: #166534; }
+    .badge-discounted { background-color: #fef08a; color: #854d0e; }
+    .badge-urgent { background-color: #fee2e2; color: #991b1b; }
 </style>
 """, unsafe_allow_html=True)
 
@@ -158,7 +165,6 @@ def initialize_mock_data():
 
 initialize_mock_data()
 
-# Helper for status updates
 def update_batch_statuses():
     now = datetime.now()
     for batch in st.session_state.batches:
@@ -170,8 +176,8 @@ def update_batch_statuses():
 update_batch_statuses()
 
 # --- Main Header ---
-st.title("🌱 Nutrilink: Surplus Food Network")
-st.caption("Reducing food waste through localized, real-time networking.")
+st.title("Nutrilink | Operations Dashboard")
+st.caption("Surplus Food Redistribution Network. Enterprise Management Console.")
 st.divider()
 
 # --- 1. Top-Level Impact KPI Cards ---
@@ -187,51 +193,51 @@ claims_today = [
 meals_rescued_today = sum(c["claimed_quantity"] for c in claims_today)
 
 k1, k2, k3 = st.columns(3)
-k1.metric("Total Surplus Portions", total_portions_available)
-k2.metric("Active Batches Listed", active_batches_count)
-k3.metric("Meals Rescued Today", meals_rescued_today)
+k1.metric("Total Active Portions", f"{total_portions_available:,}")
+k2.metric("Active Batch Listings", active_batches_count)
+k3.metric("Portions Rescued Today", meals_rescued_today)
 st.divider()
 
 # --- 2. Role Switcher in Sidebar ---
-st.sidebar.title("Navigation")
-role = st.sidebar.radio("Select View:", [
-    "🏪 Vendor",
-    "🤝 Receiver",
-    "🔍 Database Inspector"
+st.sidebar.title("System Navigation")
+role = st.sidebar.radio("Active Module:", [
+    "Vendor Portal",
+    "Receiver Marketplace",
+    "Database Inspector"
 ])
 
 def get_vendor(vendor_id):
     return next((v for v in st.session_state.vendors if v["vendor_id"] == vendor_id), None)
 
 # --- Views ---
-if role == "🏪 Vendor":
-    st.header("Vendor Portal")
-    st.write("Post surplus inventory to immediately notify nearby charities and reduce food waste.")
+if role == "Vendor Portal":
+    st.header("Vendor Intake Portal")
+    st.write("Securely post commercial surplus inventory for immediate redistribution routing.")
     
     with st.form("donor_entry_form", clear_on_submit=True):
-        st.subheader("1. Vendor Details")
+        st.subheader("1. Organization Details")
         c1, c2, c3 = st.columns(3)
         with c1:
-            biz_name = st.text_input("Business Name", placeholder="e.g., Star Kabab")
+            biz_name = st.text_input("Business Name", placeholder="Enter registered business name")
         with c2:
             biz_type = st.selectbox("Business Type", ["Restaurant", "Bakery", "Caterer", "Supermarket"])
         with c3:
-            zone = st.selectbox("Dhaka Area / Zone", ["Dhanmondi", "Gulshan", "Mirpur", "Uttara", "Banani", "Old Dhaka"])
+            zone = st.selectbox("Operating Zone", ["Dhanmondi", "Gulshan", "Mirpur", "Uttara", "Banani", "Old Dhaka"])
             
-        st.subheader("2. Surplus Batch Details")
+        st.subheader("2. Inventory Specifics")
         c4, c5 = st.columns(2)
         with c4:
-            item_name = st.text_input("Food Item Name", placeholder="e.g., Mutton Kacchi Biryani")
-            portions = st.number_input("Portions (min 1)", min_value=1, step=1, value=10)
+            item_name = st.text_input("Commodity Name", placeholder="Enter item description")
+            portions = st.number_input("Available Portions", min_value=1, step=1, value=10)
         with c5:
-            original_price = st.number_input("Original Price per Portion (BDT)", min_value=0.0, step=10.0, value=150.0)
-            expiry_hours = st.slider("Expiry Hours from now", min_value=1, max_value=48, value=12)
+            original_price = st.number_input("Standard Price per Unit (BDT)", min_value=0.0, step=10.0, value=150.0)
+            expiry_hours = st.slider("Quality Assurance Window (Hours)", min_value=1, max_value=48, value=12)
             
-        submitted = st.form_submit_button("🚀 Publish Surplus Batch", use_container_width=True)
+        submitted = st.form_submit_button("Authorize and Publish Batch", use_container_width=True)
         
         if submitted:
             if not biz_name.strip() or not item_name.strip():
-                st.error("Please fill in both Business Name and Item Name.")
+                st.error("Validation Error: Business Name and Commodity Name are required fields.")
             else:
                 vendor = next((v for v in st.session_state.vendors if v["vendor_name"].lower() == biz_name.lower()), None)
                 if not vendor:
@@ -256,19 +262,19 @@ if role == "🏪 Vendor":
                     "batch_status": "Available"
                 }
                 st.session_state.batches.append(new_batch)
-                st.toast("✅ Batch listed successfully!", icon="🍲")
-                st.success(f"Success! {portions} portions of '{item_name}' have been listed.")
+                st.toast("Transaction Successful: Batch Registered.")
+                st.success(f"System Update: {portions} units of '{item_name}' successfully committed to the redistribution network.")
 
-elif role == "🤝 Receiver":
+elif role == "Receiver Marketplace":
     st.header("Receiver Marketplace")
     
-    st.subheader("Search & Filter Options")
+    st.subheader("Inventory Query Parameters")
     f_col1, f_col2, f_col3 = st.columns(3)
     with f_col1:
-        search_q = st.text_input("Search by Item Name", placeholder="e.g., Khichuri")
+        search_q = st.text_input("Query by Item", placeholder="Search parameters...")
     with f_col2:
         zone_options = list(set([v["zone"] for v in st.session_state.vendors]))
-        selected_zones = st.multiselect("Filter by Dhaka Zone", zone_options, default=[])
+        selected_zones = st.multiselect("Filter by Zone", zone_options, default=[])
     with f_col3:
         status_filter = st.selectbox("Status Filter", ["All", "Available", "Urgent", "Discounted"])
         
@@ -310,30 +316,30 @@ elif role == "🤝 Receiver":
     st.divider()
     
     if not df_batches:
-        st.info("No surplus food batches match your criteria right now.")
+        st.info("No active inventory matches the specified query parameters.")
     else:
         for item in df_batches:
             with st.container(border=True):
                 col1, col2, col3 = st.columns([3, 2, 2])
                 with col1:
-                    st.markdown(f"#### 🍲 {item['item_name']}")
-                    st.caption(f"**Provider:** {item['vendor_name']} | **Zone:** {item['zone']}")
+                    st.markdown(f"#### {item['item_name']}")
+                    st.caption(f"**Origin:** {item['vendor_name']} | **Sector:** {item['zone']}")
                     
                 with col2:
                     if item['status'] == "Urgent":
-                        st.markdown('<span class="badge-urgent">⚡ Urgent (< 1h)</span>', unsafe_allow_html=True)
+                        st.markdown('<span class="badge badge-urgent">Priority: Urgent (< 1h)</span>', unsafe_allow_html=True)
                     elif item['status'] == "Discounted":
-                        st.markdown('<span class="badge-green">🏷️ Discounted</span>', unsafe_allow_html=True)
+                        st.markdown('<span class="badge badge-discounted">Discounted</span>', unsafe_allow_html=True)
                     else:
-                        st.markdown('<span class="badge-green">🟢 Available</span>', unsafe_allow_html=True)
+                        st.markdown('<span class="badge badge-available">Available</span>', unsafe_allow_html=True)
                     
-                    st.markdown(f"**Available Portions:** {item['quantity']}")
-                    st.markdown(f"**Price:** ৳ {item['price']}")
+                    st.markdown(f"<br>**Stock:** {item['quantity']} units", unsafe_allow_html=True)
+                    st.markdown(f"**Value:** {item['price']:.2f} BDT")
                     
                 with col3:
-                    with st.expander("Claim Batch", expanded=False):
-                        claim_qty = st.number_input("Portions to claim", min_value=1, max_value=item['quantity'], value=1, key=f"qty_{item['batch_id']}")
-                        if st.button("Confirm Claim", type="primary", key=f"claim_{item['batch_id']}", use_container_width=True):
+                    with st.expander("Process Claim", expanded=False):
+                        claim_qty = st.number_input("Request Volume", min_value=1, max_value=item['quantity'], value=1, key=f"qty_{item['batch_id']}")
+                        if st.button("Execute Transaction", type="primary", key=f"claim_{item['batch_id']}", use_container_width=True):
                             for b in st.session_state.batches:
                                 if b["batch_id"] == item["batch_id"]:
                                     b["quantity"] -= claim_qty
@@ -348,39 +354,38 @@ elif role == "🤝 Receiver":
                                 "claim_status": "Reserved"
                             }
                             st.session_state.claims.append(new_claim)
-                            st.toast(f"Successfully claimed {claim_qty} portions!", icon="🎉")
-                            st.balloons()
+                            st.toast("Transaction Completed Successfully.")
                             st.rerun()
 
-elif role == "🔍 Database Inspector":
-    st.header("Database Inspector")
-    st.write("Real-time view of internal data structures mirroring the relational schema.")
+elif role == "Database Inspector":
+    st.header("Schema & State Inspector")
+    st.write("Real-time read replica of the internal relational table structures.")
     
     t1, t2, t3, t4 = st.tabs(["vendors", "receivers", "food_batches", "claims"])
     
     with t1:
-        st.subheader("Table: vendors")
-        st.caption("Engine: InnoDB | PK: vendor_id")
+        st.subheader("Entity: vendors")
+        st.caption("Engine: InnoDB | Constraint: PRIMARY KEY (vendor_id)")
         df_vendors = pd.DataFrame(st.session_state.vendors)
         st.dataframe(df_vendors, use_container_width=True)
         
     with t2:
-        st.subheader("Table: receivers")
-        st.caption("Engine: InnoDB | PK: receiver_id")
+        st.subheader("Entity: receivers")
+        st.caption("Engine: InnoDB | Constraint: PRIMARY KEY (receiver_id)")
         df_receivers = pd.DataFrame(st.session_state.receivers)
         st.dataframe(df_receivers, use_container_width=True)
         
     with t3:
-        st.subheader("Table: food_batches")
-        st.caption("Engine: InnoDB | PK: batch_id | FK: vendor_id -> vendors(vendor_id)")
+        st.subheader("Entity: food_batches")
+        st.caption("Engine: InnoDB | Constraint: FOREIGN KEY (vendor_id) REFERENCES vendors(vendor_id)")
         df_batches_full = pd.DataFrame(st.session_state.batches)
         if not df_batches_full.empty:
             df_batches_full["expiry_time"] = df_batches_full["expiry_time"].apply(lambda x: x.strftime('%Y-%m-%d %H:%M:%S') if pd.notnull(x) else "")
         st.dataframe(df_batches_full, use_container_width=True)
         
     with t4:
-        st.subheader("Table: claims")
-        st.caption("Engine: InnoDB | PK: claim_id | FK: batch_id -> food_batches(batch_id), receiver_id -> receivers(receiver_id)")
+        st.subheader("Entity: claims")
+        st.caption("Engine: InnoDB | Constraint: FOREIGN KEY (batch_id, receiver_id)")
         df_claims = pd.DataFrame(st.session_state.claims)
         if not df_claims.empty:
             df_claims["claim_timestamp"] = df_claims["claim_timestamp"].apply(lambda x: x.strftime('%Y-%m-%d %H:%M:%S') if pd.notnull(x) else "")
