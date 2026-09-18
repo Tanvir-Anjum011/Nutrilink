@@ -5,7 +5,7 @@ from datetime import datetime, timedelta
 # App Configuration
 st.set_page_config(page_title="Nutrilink | Surplus Food Network", layout="wide")
 
-# Custom CSS — Enterprise SaaS Theme (Sleek, Modern, No Emojis)
+# Custom CSS — Enterprise SaaS Theme (Sleek, Modern, Centered Green Title)
 st.markdown("""
 <link href="https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700;900&display=swap" rel="stylesheet">
 <style>
@@ -14,9 +14,10 @@ st.markdown("""
         font-family: 'Lato', sans-serif !important;
     }
     
-    /* Professional Header Styling */
+    /* Professional Header Styling (Centered & Greenish) */
     h1 {
-        color: #1e293b !important;
+        color: #059669 !important; /* Emerald Green */
+        text-align: center !important;
         font-weight: 900 !important;
         letter-spacing: -0.5px;
         animation: fadeInDown 0.6s ease-out;
@@ -177,7 +178,6 @@ update_batch_statuses()
 
 # --- Main Header ---
 st.title("Nutrilink | Operations Dashboard")
-st.caption("Surplus Food Redistribution Network. Enterprise Management Console.")
 st.divider()
 
 # --- 1. Top-Level Impact KPI Cards ---
