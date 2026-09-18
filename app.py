@@ -5,11 +5,90 @@ from datetime import datetime, timedelta
 # App Configuration
 st.set_page_config(page_title="Nutrilink | Surplus Food Network", layout="wide")
 
-# Custom CSS for Professional Font
+# Custom CSS — Lato Font + Animated Top Navbar
 st.markdown("""
+<link href="https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700;900&display=swap" rel="stylesheet">
 <style>
-    html, body, [class*="st-"], .stApp {
-        font-family: 'Inter', 'Segoe UI', Roboto, Helvetica, Arial, sans-serif !important;
+    html, body, [class*="st-"], .stApp, p, h1, h2, h3, h4, h5, h6, label, div {
+        font-family: 'Lato', sans-serif !important;
+    }
+
+    /* Animated Top Navigation Bar */
+    .nutrilink-nav {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+        padding: 10px 24px;
+        border-radius: 12px;
+        margin-bottom: 24px;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.25);
+        position: relative;
+        overflow: hidden;
+    }
+    .nutrilink-nav::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        left: -50%;
+        width: 200%;
+        height: 200%;
+        background: radial-gradient(ellipse at 60% 50%, rgba(99,179,237,0.08) 0%, transparent 60%);
+        animation: shimmer 4s ease-in-out infinite alternate;
+    }
+    @keyframes shimmer {
+        0%   { transform: translateX(-10%) rotate(0deg); }
+        100% { transform: translateX(10%) rotate(5deg); }
+    }
+    .nav-brand {
+        color: #fff;
+        font-size: 1.1rem;
+        font-weight: 900;
+        letter-spacing: 1px;
+        margin-right: 20px;
+        white-space: nowrap;
+    }
+    .nav-spacer { flex: 1; }
+    .nav-btn {
+        background: transparent;
+        color: rgba(255,255,255,0.7);
+        border: 1px solid rgba(255,255,255,0.15);
+        padding: 7px 20px;
+        border-radius: 8px;
+        cursor: pointer;
+        font-family: 'Lato', sans-serif;
+        font-size: 0.88rem;
+        font-weight: 700;
+        letter-spacing: 0.5px;
+        transition: all 0.25s ease;
+        white-space: nowrap;
+        position: relative;
+        z-index: 1;
+    }
+    .nav-btn:hover {
+        background: rgba(255,255,255,0.12);
+        color: #fff;
+        border-color: rgba(255,255,255,0.4);
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    }
+    .nav-btn.active {
+        background: linear-gradient(135deg, #3182ce, #63b3ed);
+        color: #fff;
+        border-color: transparent;
+        box-shadow: 0 4px 14px rgba(49,130,206,0.45);
+        transform: translateY(-1px);
+    }
+    .nav-btn.active::after {
+        content: '';
+        position: absolute;
+        bottom: -3px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 60%;
+        height: 2px;
+        background: #90cdf4;
+        border-radius: 2px;
     }
 </style>
 """, unsafe_allow_html=True)
@@ -111,24 +190,52 @@ active_batches_count = len(active_batches)
 
 # Meals rescued today
 today = datetime.now().date()
-meals_rescued_today = sum(
-    c["claimed_quantity"] for c in st.session_state.claims 
+claims_today = [
+    c for c in st.session_state.claims 
     if getattr(c.get("claim_timestamp", datetime.now()), 'date', lambda: datetime.now().date())() == today
-)
+]
+meals_rescued_today = sum(c["claimed_quantity"] for c in claims_today)
 
-k1, k2, k3 = st.columns(3)
+# BDT equivalent of food saved today
+bdt_saved_today = sum(c["total_price"] for c in claims_today)
+
+k1, k2, k3, k4 = st.columns(4)
 k1.metric("Total Surplus Portions Available", total_portions_available)
 k2.metric("Active Batches Listed", active_batches_count)
 k3.metric("Meals Rescued Today", meals_rescued_today)
+k4.metric("BDT Value Saved Today", f"{bdt_saved_today:,.0f} BDT")
 st.divider()
 
-# --- 2. Role Switcher in Sidebar ---
-st.sidebar.title("Navigation")
-role = st.sidebar.radio("Select View:", [
-    "Vendor Portal",
-    "Receiver Marketplace",
-    "Database Inspector"
-])
+# --- 2. Animated Top Navigation Bar ---
+NAV_ITEMS = ["Receiver Marketplace", "Vendor Portal", "Database Inspector"]
+if "nav_role" not in st.session_state:
+    st.session_state.nav_role = "Receiver Marketplace"
+
+# Render navbar buttons as a form to capture clicks
+with st.container():
+    nav_cols = st.columns([2] + [1] * len(NAV_ITEMS) + [2])
+    # Brand label
+    nav_cols[0].markdown(
+        "<div style='padding-top:6px; font-family:Lato,sans-serif; font-weight:900; font-size:1rem; color:#1a202c; letter-spacing:0.5px;'>Nutrilink</div>",
+        unsafe_allow_html=True
+    )
+    for i, item in enumerate(NAV_ITEMS):
+        is_active = st.session_state.nav_role == item
+        btn_style = (
+            "background:linear-gradient(135deg,#3182ce,#63b3ed);color:#fff;border:none;font-weight:700;"
+            if is_active else
+            "background:#edf2f7;color:#4a5568;border:1px solid #cbd5e0;font-weight:600;"
+        )
+        if nav_cols[i + 1].button(
+            item,
+            key=f"nav_{item}",
+            use_container_width=True,
+        ):
+            st.session_state.nav_role = item
+            st.rerun()
+
+role = st.session_state.nav_role
+st.divider()
 
 def get_vendor(vendor_id):
     return next((v for v in st.session_state.vendors if v["vendor_id"] == vendor_id), None)
@@ -136,7 +243,7 @@ def get_vendor(vendor_id):
 # --- Views ---
 if role == "Vendor Portal":
     st.header("Vendor Portal")
-    st.write("Post surplus inventory to immediately notify nearby charities.")
+    st.write("Post surplus inventory to immediately notify nearby charities and reduce food waste.")
     
     with st.form("donor_entry_form", clear_on_submit=True):
         st.subheader("1. Vendor Details")
@@ -191,7 +298,7 @@ if role == "Vendor Portal":
                 st.toast("Batch listed successfully!")
                 st.success(f"Success! {portions} portions of '{item_name}' have been listed and charities in {zone} notified.")
 
-elif role == "Receiver Marketplace":
+if role == "Receiver Marketplace":
     st.header("Receiver Marketplace")
     
     # 4. Filter bar
@@ -290,7 +397,7 @@ elif role == "Receiver Marketplace":
                             st.balloons()
                             st.rerun()
 
-elif role == "Database Inspector":
+if role == "Database Inspector":
     st.header("Database Inspector")
     st.write("Real-time view of internal data structures mirroring the relational schema.")
     
