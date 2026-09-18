@@ -1,4 +1,4 @@
-# Nutrilink — Surplus Food Redistribution Network
+# Nutrilink ~ Surplus Food Redistribution Network
 
 Nutrilink is a relational database management system designed to connect commercial food donors (restaurants, bakeries, caterers) across Dhaka with verified charities and shelters to eliminate edible food waste. The platform runs on Python, Streamlit, and MySQL 8.0 (InnoDB) using raw parameterized SQL without ORMs.
 
