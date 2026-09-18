@@ -3,7 +3,7 @@ import pandas as pd
 from datetime import datetime, timedelta
 
 # App Configuration
-st.set_page_config(page_title="Nutrilink | Surplus Food Network", layout="wide")
+st.set_page_config(page_title="Nutrilink | Surplus Food Network", page_icon="🌱", layout="wide")
 
 # --- Helper Functions for Mock Data ---
 def initialize_mock_data():
@@ -32,7 +32,6 @@ def initialize_mock_data():
                 "original_price": 350.00,
                 "expiry_time": now + timedelta(hours=12),
                 "batch_status": "Available",
-                "is_veg": False
             },
             {
                 "batch_id": 2,
@@ -41,8 +40,7 @@ def initialize_mock_data():
                 "quantity": 15,
                 "original_price": 220.00,
                 "expiry_time": now + timedelta(minutes=45),
-                "batch_status": "Discounted",
-                "is_veg": False
+                "batch_status": "Expiring Soon",
             },
             {
                 "batch_id": 3,
@@ -52,7 +50,6 @@ def initialize_mock_data():
                 "original_price": 150.00,
                 "expiry_time": now + timedelta(hours=5),
                 "batch_status": "Available",
-                "is_veg": True
             },
             {
                 "batch_id": 4,
@@ -62,7 +59,6 @@ def initialize_mock_data():
                 "original_price": 120.00,
                 "expiry_time": now - timedelta(hours=1),
                 "batch_status": "Expired",
-                "is_veg": False
             },
             {
                 "batch_id": 5,
@@ -72,170 +68,253 @@ def initialize_mock_data():
                 "original_price": 80.00,
                 "expiry_time": now + timedelta(hours=2),
                 "batch_status": "Available",
-                "is_veg": False
             },
         ]
         
     if "claims" not in st.session_state:
         st.session_state.claims = [
-            {"claim_id": 1, "batch_id": 2, "receiver_id": 1, "claimed_quantity": 5, "total_price": 1100.00, "claim_status": "Reserved"},
-            {"claim_id": 2, "batch_id": 3, "receiver_id": 2, "claimed_quantity": 10, "total_price": 0.00, "claim_status": "Completed"}
+            {"claim_id": 1, "batch_id": 2, "receiver_id": 1, "claimed_quantity": 5, "total_price": 1100.00, "claim_timestamp": datetime.now(), "claim_status": "Reserved"},
+            {"claim_id": 2, "batch_id": 3, "receiver_id": 2, "claimed_quantity": 10, "total_price": 0.00, "claim_timestamp": datetime.now() - timedelta(hours=2), "claim_status": "Completed"}
         ]
 
 initialize_mock_data()
 
-# --- Main Header ---
-st.title("Nutrilink: Surplus Food Redistribution")
+# Helper for status updates
+def update_batch_statuses():
+    now = datetime.now()
+    for batch in st.session_state.batches:
+        if batch["expiry_time"] < now:
+            batch["batch_status"] = "Expired"
+        elif (batch["expiry_time"] - now).total_seconds() / 3600 < 1 and batch["batch_status"] != "Expired":
+             batch["batch_status"] = "Urgent"
 
-# --- Navigation ---
-nav_selection = st.sidebar.radio(
-    "Navigation",
-    ["Receiver Marketplace", "Vendor Portal", "Impact Analytics"]
+update_batch_statuses()
+
+# --- Main Header ---
+st.title("🌱 Nutrilink: Surplus Food Redistribution")
+st.caption("Reducing food waste through localized, real-time networking.")
+st.divider()
+
+# --- 1. Top-Level Impact KPI Cards ---
+active_batches = [b for b in st.session_state.batches if b["batch_status"] != "Expired" and b["quantity"] > 0]
+total_portions_available = sum(b["quantity"] for b in active_batches)
+active_batches_count = len(active_batches)
+
+# Meals rescued today
+today = datetime.now().date()
+meals_rescued_today = sum(
+    c["claimed_quantity"] for c in st.session_state.claims 
+    if getattr(c.get("claim_timestamp", datetime.now()), 'date', lambda: datetime.now().date())() == today
 )
+
+k1, k2, k3 = st.columns(3)
+k1.metric("Total Surplus Portions Available", total_portions_available)
+k2.metric("Active Batches Listed", active_batches_count)
+k3.metric("Meals Rescued Today", meals_rescued_today)
+st.divider()
+
+# --- 2. Role Switcher in Sidebar ---
+st.sidebar.title("Navigation")
+role = st.sidebar.radio("Select View:", [
+    "🏪 Commercial Donor (Vendor Portal)",
+    "🤝 Charity / Receiver (Marketplace)",
+    "🔍 Database Inspector (Sir / Evaluator Mode)"
+])
 
 def get_vendor(vendor_id):
     return next((v for v in st.session_state.vendors if v["vendor_id"] == vendor_id), None)
 
-def get_badge(expiry_time, status):
-    now = datetime.now()
-    if status == "Expired" or expiry_time < now:
-        return "🔒 Expired (Auto-Locked)"
+# --- Views ---
+if role == "🏪 Commercial Donor (Vendor Portal)":
+    st.header("🏪 Commercial Donor Portal")
+    st.write("Post surplus inventory to immediately notify nearby charities.")
     
-    time_left = expiry_time - now
-    hours_left = time_left.total_seconds() / 3600
-    
-    if hours_left < 1:
-        return "⚡ Urgent (< 1h left)"
-    elif status == "Discounted":
-        return "🟡 Discounted"
-    else:
-        return "🟢 Fresh Listing"
-
-if nav_selection == "Receiver Marketplace":
-    st.header("Receiver Marketplace")
-    
-    # Filter Bar
-    f1, f2, f3 = st.columns([2, 1, 1])
-    search_query = f1.text_input("Search available items...", placeholder="e.g., Kacchi Biryani")
-    zone_filter = f2.selectbox("Filter by Zone", ["All", "Dhanmondi", "Gulshan", "Mirpur", "Uttara"])
-    
-    # Align checkbox vertically
-    with f3:
-        st.write("")
-        st.write("")
-        veg_filter = st.checkbox("Vegetarian Only")
-    
-    st.divider()
-    
-    # Filter Logic
-    now = datetime.now()
-    filtered_batches = st.session_state.batches
-    
-    if search_query:
-        filtered_batches = [b for b in filtered_batches if search_query.lower() in b["item_name"].lower()]
-    if zone_filter != "All":
-        filtered_batches = [b for b in filtered_batches if get_vendor(b["vendor_id"])["zone"] == zone_filter]
-    if veg_filter:
-        filtered_batches = [b for b in filtered_batches if b.get("is_veg", False)]
-        
-    for batch in filtered_batches:
-        vendor = get_vendor(batch["vendor_id"])
-        vendor_name = vendor["vendor_name"] if vendor else "Unknown Vendor"
-        zone = vendor["zone"] if vendor else "Unknown"
-        
-        badge_text = get_badge(batch["expiry_time"], batch["batch_status"])
-        
-        with st.container(border=True):
-            c1, c2, c3 = st.columns([3, 2, 2])
-            
-            with c1:
-                st.markdown(f"### {batch['item_name']}")
-                st.caption(f"Provider: **{vendor_name}** ({zone})")
-                
-                # Progress bar for expiry
-                total_shelf_life_hours = 24.0
-                if batch["expiry_time"] > now:
-                    hours_left = (batch["expiry_time"] - now).total_seconds() / 3600.0
-                    prog = min(max(hours_left / total_shelf_life_hours, 0.0), 1.0)
-                    st.progress(prog, text=f"Expires at: {batch['expiry_time'].strftime('%I:%M %p, %d %b')}")
-                else:
-                    st.progress(0.0, text="Expired")
-
-            with c2:
-                st.markdown(f"**Status:** {badge_text}")
-                st.markdown(f"**Available:** {batch['quantity']} portions")
-                st.markdown(f"**Price:** ৳{batch['original_price']:.2f}")
-                
-            with c3:
-                is_expired = batch["batch_status"] == "Expired" or batch["expiry_time"] <= now
-                if is_expired:
-                    st.button("Locked", key=f"btn_{batch['batch_id']}", disabled=True, use_container_width=True)
-                else:
-                    if st.button("Claim Batch", key=f"btn_{batch['batch_id']}", type="primary", use_container_width=True):
-                        # TODO: Week 3 execute UPDATE food_batches SET quantity ...
-                        st.success(f"Claimed batch #{batch['batch_id']}!")
-
-elif nav_selection == "Vendor Portal":
-    st.header("Vendor Portal")
-    
-    st.subheader("List New Surplus Batch")
-    
-    with st.form("add_batch_form", clear_on_submit=True):
-        vendor_options = {v["vendor_name"]: v["vendor_id"] for v in st.session_state.vendors}
-        selected_vendor_name = st.selectbox("Select Vendor", list(vendor_options.keys()))
-        
-        item_name = st.text_input("Food Item Name", placeholder="e.g., Mutton Kacchi Biryani")
-        
+    with st.form("donor_entry_form", clear_on_submit=True):
+        st.subheader("1. Vendor Details")
         c1, c2, c3 = st.columns(3)
         with c1:
-            quantity = st.number_input("Quantity (Portions/Kg)", min_value=1, max_value=500, value=10)
+            biz_name = st.text_input("Business Name", placeholder="e.g., Star Kabab")
         with c2:
-            original_price = st.number_input("Price per Portion (৳)", min_value=0.0, value=150.0, step=10.0)
+            biz_type = st.selectbox("Business Type", ["Restaurant", "Bakery", "Caterer", "Supermarket"])
         with c3:
-            st.write("")
-            st.write("")
-            is_veg = st.checkbox("Vegetarian")
+            zone = st.selectbox("Dhaka Area / Zone", ["Dhanmondi", "Gulshan", "Mirpur", "Uttara", "Banani", "Old Dhaka"])
             
-        shelf_hours = st.slider("Shelf-Life Window (Hours from now)", min_value=1, max_value=48, value=12)
-        submit_batch = st.form_submit_button("Post Batch to Inventory", use_container_width=True)
+        st.subheader("2. Surplus Batch Details")
+        c4, c5 = st.columns(2)
+        with c4:
+            item_name = st.text_input("Food Item Name", placeholder="e.g., Mutton Kacchi Biryani")
+            portions = st.number_input("Portions (min 1)", min_value=1, step=1, value=10)
+        with c5:
+            original_price = st.number_input("Original Price per Portion (BDT)", min_value=0.0, step=10.0, value=150.0)
+            expiry_hours = st.slider("Expiry Hours from now", min_value=1, max_value=48, value=12)
+            
+        submitted = st.form_submit_button("Publish Surplus Batch", use_container_width=True)
         
-        if submit_batch:
-            if not item_name.strip():
-                st.error("Please enter a valid food item name.")
+        if submitted:
+            if not biz_name.strip() or not item_name.strip():
+                st.error("Please fill in both Business Name and Item Name.")
             else:
-                vendor_id = vendor_options[selected_vendor_name]
-                new_item = {
+                # Find or create vendor
+                vendor = next((v for v in st.session_state.vendors if v["vendor_name"].lower() == biz_name.lower()), None)
+                if not vendor:
+                    vendor_id = len(st.session_state.vendors) + 1
+                    vendor = {
+                        "vendor_id": vendor_id,
+                        "vendor_name": biz_name,
+                        "zone": zone,
+                        "business_type": biz_type
+                    }
+                    st.session_state.vendors.append(vendor)
+                else:
+                    vendor_id = vendor["vendor_id"]
+                    
+                # Create batch
+                new_batch = {
                     "batch_id": len(st.session_state.batches) + 1,
                     "vendor_id": vendor_id,
                     "item_name": item_name,
-                    "quantity": quantity,
+                    "quantity": portions,
                     "original_price": original_price,
-                    "expiry_time": datetime.now() + timedelta(hours=shelf_hours),
-                    "batch_status": "Available",
-                    "is_veg": is_veg
+                    "expiry_time": datetime.now() + timedelta(hours=expiry_hours),
+                    "batch_status": "Available"
                 }
-                st.session_state.batches.append(new_item)
-                st.success(f"Batch '{item_name}' added successfully!")
+                st.session_state.batches.append(new_batch)
+                st.toast("✅ Batch listed successfully!")
+                st.success(f"Success! {portions} portions of '{item_name}' have been listed and charities in {zone} notified.")
 
-elif nav_selection == "Impact Analytics":
-    st.header("Impact Analytics")
+elif role == "🤝 Charity / Receiver (Marketplace)":
+    st.header("🤝 Receiver Marketplace")
     
-    # Calculate mock metrics
-    total_portions_saved = sum(c.get("claimed_quantity", 0) for c in st.session_state.claims)
-    
-    active_donors = len(set(b["vendor_id"] for b in st.session_state.batches if b["batch_status"] != "Expired" and b["expiry_time"] > datetime.now()))
-    
-    # Value diverted from waste (Original Price * Claimed Quantity)
-    bdt_diverted = 0.0
-    for claim in st.session_state.claims:
-        batch = next((b for b in st.session_state.batches if b["batch_id"] == claim["batch_id"]), None)
-        if batch:
-            bdt_diverted += batch["original_price"] * claim["claimed_quantity"]
+    # 4. Filter bar
+    st.subheader("Search & Filter Options")
+    f_col1, f_col2, f_col3 = st.columns(3)
+    with f_col1:
+        search_q = st.text_input("Search by Item Name", placeholder="e.g., Khichuri")
+    with f_col2:
+        zone_options = list(set([v["zone"] for v in st.session_state.vendors]))
+        selected_zones = st.multiselect("Filter by Dhaka Zone", zone_options, default=[])
+    with f_col3:
+        status_filter = st.selectbox("Status Filter", ["All", "Available", "Urgent", "Discounted"])
         
-    k1, k2, k3 = st.columns(3)
-    k1.metric("Total Portions Saved", f"{total_portions_saved}")
-    k2.metric("Active Donors", f"{active_donors}")
-    k3.metric("BDT Diverted from Waste", f"৳{bdt_diverted:,.2f}")
-    
+    # Apply Filters
+    df_batches = []
+    for b in st.session_state.batches:
+        v = get_vendor(b["vendor_id"])
+        if not v: continue
+        
+        # Determine visual status
+        now = datetime.now()
+        if b["expiry_time"] < now:
+            stat = "Expired"
+        elif (b["expiry_time"] - now).total_seconds() / 3600 < 1:
+            stat = "Urgent"
+        else:
+            stat = b["batch_status"]
+            
+        b["current_status"] = stat
+        
+        if stat == "Expired" or b["quantity"] <= 0:
+            continue
+            
+        if search_q and search_q.lower() not in b["item_name"].lower():
+            continue
+        if selected_zones and v["zone"] not in selected_zones:
+            continue
+        if status_filter != "All" and stat != status_filter:
+            continue
+            
+        df_batches.append({
+            "batch_id": b["batch_id"],
+            "vendor_name": v["vendor_name"],
+            "zone": v["zone"],
+            "item_name": b["item_name"],
+            "quantity": b["quantity"],
+            "price": b["original_price"],
+            "expiry": b["expiry_time"],
+            "status": stat
+        })
+        
     st.divider()
-    st.info("Further analytics and charts will be implemented in future weeks.")
+    
+    if not df_batches:
+        st.info("No surplus food batches match your criteria right now.")
+    else:
+        for item in df_batches:
+            with st.container(border=True):
+                col1, col2, col3 = st.columns([3, 2, 2])
+                with col1:
+                    st.markdown(f"#### {item['item_name']}")
+                    st.caption(f"🏪 {item['vendor_name']} | 📍 {item['zone']}")
+                    
+                with col2:
+                    if item['status'] == "Urgent":
+                        st.markdown("🚨 **Urgent (< 1h)**")
+                    elif item['status'] == "Discounted":
+                        st.markdown("🟡 **Discounted**")
+                    else:
+                        st.markdown("🟢 **Available**")
+                    
+                    st.markdown(f"**Available Portions:** {item['quantity']}")
+                    st.markdown(f"**Price:** {item['price']} BDT")
+                    
+                with col3:
+                    with st.expander("Claim Batch"):
+                        claim_qty = st.number_input("Portions to claim", min_value=1, max_value=item['quantity'], value=1, key=f"qty_{item['batch_id']}")
+                        if st.button("Confirm Claim", type="primary", key=f"claim_{item['batch_id']}", use_container_width=True):
+                            # Process Claim
+                            for b in st.session_state.batches:
+                                if b["batch_id"] == item["batch_id"]:
+                                    b["quantity"] -= claim_qty
+                                    break
+                            # Record Claim
+                            new_claim = {
+                                "claim_id": len(st.session_state.claims) + 1,
+                                "batch_id": item["batch_id"],
+                                "receiver_id": 1, # Default mock receiver
+                                "claimed_quantity": claim_qty,
+                                "total_price": claim_qty * item["price"],
+                                "claim_timestamp": datetime.now(),
+                                "claim_status": "Reserved"
+                            }
+                            st.session_state.claims.append(new_claim)
+                            st.toast(f"Successfully claimed {claim_qty} portions!", icon="🤝")
+                            st.balloons()
+                            st.rerun()
+
+elif role == "🔍 Database Inspector (Sir / Evaluator Mode)":
+    st.header("🔍 Database Inspector")
+    st.write("Real-time view of internal data structures mirroring the relational schema.")
+    
+    t1, t2, t3, t4 = st.tabs(["vendors", "receivers", "food_batches", "claims"])
+    
+    with t1:
+        st.subheader("Table: vendors")
+        st.caption("Engine: InnoDB | PK: vendor_id")
+        df_vendors = pd.DataFrame(st.session_state.vendors)
+        st.dataframe(df_vendors, use_container_width=True)
+        st.write(f"Row count: {len(df_vendors)}")
+        
+    with t2:
+        st.subheader("Table: receivers")
+        st.caption("Engine: InnoDB | PK: receiver_id")
+        df_receivers = pd.DataFrame(st.session_state.receivers)
+        st.dataframe(df_receivers, use_container_width=True)
+        st.write(f"Row count: {len(df_receivers)}")
+        
+    with t3:
+        st.subheader("Table: food_batches")
+        st.caption("Engine: InnoDB | PK: batch_id | FK: vendor_id -> vendors(vendor_id)")
+        df_batches_full = pd.DataFrame(st.session_state.batches)
+        if not df_batches_full.empty:
+            df_batches_full["expiry_time"] = df_batches_full["expiry_time"].apply(lambda x: x.strftime('%Y-%m-%d %H:%M:%S') if pd.notnull(x) else "")
+        st.dataframe(df_batches_full, use_container_width=True)
+        st.write(f"Row count: {len(df_batches_full)}")
+        
+    with t4:
+        st.subheader("Table: claims")
+        st.caption("Engine: InnoDB | PK: claim_id | FK: batch_id -> food_batches(batch_id), receiver_id -> receivers(receiver_id)")
+        df_claims = pd.DataFrame(st.session_state.claims)
+        if not df_claims.empty:
+            df_claims["claim_timestamp"] = df_claims["claim_timestamp"].apply(lambda x: x.strftime('%Y-%m-%d %H:%M:%S') if pd.notnull(x) else "")
+        st.dataframe(df_claims, use_container_width=True)
+        st.write(f"Row count: {len(df_claims)}")
