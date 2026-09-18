@@ -12,6 +12,7 @@ CREATE TABLE IF NOT EXISTS vendors (
     address TEXT
 ) ENGINE=InnoDB;
 
+
 -- 2. Receivers Table
 CREATE TABLE IF NOT EXISTS receivers (
     receiver_id INT AUTO_INCREMENT PRIMARY KEY,
