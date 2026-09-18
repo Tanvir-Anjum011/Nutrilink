@@ -24,7 +24,7 @@ Nutrilink connects local restaurants, bakeries, and caterers across Dhaka with s
 1. **`vendors`**: Restaurants and food shops donating surplus food.
 2. **`receivers`**: Verified charities, shelters, and NGOs claiming items.
 3. **`food_batches`**: The actual food items, portions, prices, and expiry times.
-4. **`claims`**: The bridge table tracking which NGO claimed which batch, how much, and when.
+4. **`claims`**: The bridge table tracking which NGO claimed which batch, how much, and when
 
 ---
 
