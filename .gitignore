@@ -6,6 +6,7 @@ ENV/
 # Python Cache
 __pycache__/
 *.pyc
+project_Rules.md
 
 # macOS metadata
 .DS_Store
