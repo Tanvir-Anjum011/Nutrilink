@@ -2,7 +2,7 @@
 CREATE DATABASE IF NOT EXISTS surplus_food_db;
 USE surplus_food_db;
 
--- 1. Vendors Table
+-- 1. Vendors Table ----
 CREATE TABLE IF NOT EXISTS vendors (
     vendor_id INT AUTO_INCREMENT PRIMARY KEY,
     vendor_name VARCHAR(255) NOT NULL,
@@ -13,7 +13,7 @@ CREATE TABLE IF NOT EXISTS vendors (
 ) ENGINE=InnoDB;
 
 
--- 2. Receivers Table
+-- 2. Receivers Table----
 CREATE TABLE IF NOT EXISTS receivers (
     receiver_id INT AUTO_INCREMENT PRIMARY KEY,
     org_name VARCHAR(255) NOT NULL,
@@ -22,7 +22,7 @@ CREATE TABLE IF NOT EXISTS receivers (
     daily_quota_limit INT CHECK (daily_quota_limit > 0)
 ) ENGINE=InnoDB;
 
--- 3. Food Batches Table
+-- 3. Food Batches Table ----
 CREATE TABLE IF NOT EXISTS food_batches (
     batch_id INT AUTO_INCREMENT PRIMARY KEY,
     vendor_id INT NOT NULL,
@@ -35,7 +35,7 @@ CREATE TABLE IF NOT EXISTS food_batches (
     FOREIGN KEY (vendor_id) REFERENCES vendors(vendor_id) ON DELETE CASCADE
 ) ENGINE=InnoDB;
 
--- 4. Claims Associative Table
+-- 4. Claims Associative Table ----
 CREATE TABLE IF NOT EXISTS claims (
     claim_id INT AUTO_INCREMENT PRIMARY KEY,
     batch_id INT NOT NULL,
