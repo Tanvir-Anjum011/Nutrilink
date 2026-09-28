@@ -193,10 +193,11 @@ st.markdown("""
 def get_db_connection():
     try:
         conn = mysql.connector.connect(
-            host=os.getenv("MYSQL_HOST", "localhost"),
-            user=os.getenv("MYSQL_USER", "root"),
-            password=os.getenv("MYSQL_PASSWORD", "root1234"),
-            database=os.getenv("MYSQL_DB", "surplus_food_db")
+            host=st.secrets.get("MYSQL_HOST", "localhost"),
+            port=st.secrets.get("MYSQL_PORT", 3306),
+            user=st.secrets.get("MYSQL_USER", "root"),
+            password=st.secrets.get("MYSQL_PASSWORD", "root1234"),
+            database=st.secrets.get("MYSQL_DB", "surplus_food_db")
         )
         return conn
     except Error as e:
