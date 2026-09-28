@@ -405,7 +405,7 @@ elif role == "Receiver":
                             
                             # Real-Time Expiry Countdown Component
                             # Uses JS to tick down without Streamlit reruns
-                            expiry_ts = item['expiry_time'].isoformat()
+                            expiry_ts = item['expiry_time'].isoformat() + "Z"
                             countdown_id = f"countdown_{item['batch_id']}"
                             components.html(
                                 f"""
