@@ -414,10 +414,11 @@ elif role == "Receiver":
                                 </div>
                                 <script>
                                     var countDownDate = new Date("{expiry_ts}").getTime();
+                                    var bufferMs = 30 * 60 * 1000;
                                     var x = setInterval(function() {{
                                         var now = new Date().getTime();
                                         var distance = countDownDate - now;
-                                        if (distance < 0) {{
+                                        if (distance <= bufferMs) {{
                                             clearInterval(x);
                                             document.getElementById("{countdown_id}").innerHTML = "EXPIRED";
                                         }} else {{
@@ -433,33 +434,33 @@ elif role == "Receiver":
                             )
                             
                         with col2:
-                            if float(item['current_price']) == 0:
-                                st.markdown('<span class="badge badge-urgent">FREE / DONATION</span>', unsafe_allow_html=True)
-                            elif float(item['current_price']) < float(item['original_price']):
-                                st.markdown('<span class="badge badge-discounted">Discounted (50%)</span>', unsafe_allow_html=True)
+                            if float(item['current_price']) < float(item['original_price']):
+                                st.markdown('<span class="badge badge-discounted">DISCOUNTED (50%)</span>', unsafe_allow_html=True)
                             else:
-                                st.markdown('<span class="badge badge-available">Available</span>', unsafe_allow_html=True)
+                                st.markdown('<span class="badge badge-available">AVAILABLE</span>', unsafe_allow_html=True)
                             
                             st.markdown(f"<br>**Stock:** {item['quantity']} units", unsafe_allow_html=True)
-                            if float(item['current_price']) == 0:
-                                st.markdown("100% Free / Sponsored")
-                            elif float(item['current_price']) < float(item['original_price']):
+                            if float(item['current_price']) < float(item['original_price']):
                                 st.markdown(f"Discounted: {item['current_price']:.2f} BDT (Standard: {item['original_price']:.2f})")
                             else:
                                 st.markdown(f"Price: {item['current_price']:.2f} BDT")
                             
                         with col3:
-                            with st.expander("Process Claim", expanded=False):
-                                claim_qty = st.number_input("Request Volume", min_value=0, max_value=item['quantity'], value=0, key=f"qty_{item['batch_id']}")
-                                if st.button("Execute Transaction", type="primary", key=f"claim_{item['batch_id']}", use_container_width=True):
-                                    try:
-                                        # Use Stored Procedure for Safe Claim Transaction
-                                        cursor.callproc('sp_claim_food', (active_receiver_id, item['batch_id'], claim_qty))
-                                        conn.commit()
-                                        st.toast("Transaction Completed Successfully.")
-                                        st.rerun()
-                                    except Error as e:
-                                        st.error(f"Transaction Rejected: {e.msg}")
+                            time_left = (item['expiry_time'] - datetime.now()).total_seconds()
+                            if time_left <= 1800:
+                                st.caption("Listing locked: Under 30-minute food safety buffer.")
+                            else:
+                                with st.expander("Process Claim", expanded=False):
+                                    claim_qty = st.number_input("Request Volume", min_value=0, max_value=item['quantity'], value=0, key=f"qty_{item['batch_id']}")
+                                    if st.button("Execute Transaction", type="primary", key=f"claim_{item['batch_id']}", use_container_width=True):
+                                        try:
+                                            # Use Stored Procedure for Safe Claim Transaction
+                                            cursor.callproc('sp_claim_food', (active_receiver_id, item['batch_id'], claim_qty))
+                                            conn.commit()
+                                            st.toast("Transaction Completed Successfully.")
+                                            st.rerun()
+                                        except Error as e:
+                                            st.error(f"Transaction Rejected: {e.msg}")
         cursor.close()
         conn.close()
 

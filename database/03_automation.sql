@@ -20,8 +20,7 @@ SELECT
     b.batch_status,
     CASE 
         WHEN b.expiry_time <= NOW() THEN 0
-        WHEN TIMESTAMPDIFF(HOUR, NOW(), b.expiry_time) <= 2 THEN 0
-        WHEN TIMESTAMPDIFF(HOUR, NOW(), b.expiry_time) <= 12 THEN b.original_price * 0.5
+        WHEN TIMESTAMPDIFF(MINUTE, NOW(), b.expiry_time) < 300 THEN ROUND(b.original_price * 0.5, 2)
         ELSE b.original_price
     END AS current_price
 FROM food_batches b
