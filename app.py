@@ -41,19 +41,22 @@ st.markdown("""
         font-size: 0.75rem !important;
     }
 
-    /* Minimalist Dashboard Cards */
+    /* Glassy Dashboard Cards */
     [data-testid="stVerticalBlockBorderWrapper"] {
-        border: 1px solid #e2e8f0 !important;
-        border-left: 4px solid #059669 !important;
-        border-radius: 6px !important;
-        background-color: #ffffff !important;
-        transition: all 0.25s ease-in-out !important;
-        box-shadow: 0 1px 3px rgba(0,0,0,0.05) !important;
+        border: 1px solid rgba(255, 255, 255, 0.1) !important;
+        border-left: 4px solid #10b981 !important;
+        border-radius: 12px !important;
+        background: rgba(30, 41, 59, 0.6) !important;
+        backdrop-filter: blur(12px) !important;
+        -webkit-backdrop-filter: blur(12px) !important;
+        transition: all 0.3s ease-in-out !important;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1) !important;
     }
     [data-testid="stVerticalBlockBorderWrapper"]:hover {
-        transform: translateY(-2px) !important;
-        box-shadow: 0 10px 15px -3px rgba(0,0,0,0.05), 0 4px 6px -2px rgba(0,0,0,0.025) !important;
-        border-color: #0ea5e9 !important; /* Subtle blue shift on hover */
+        transform: translateY(-4px) !important;
+        box-shadow: 0 12px 20px -5px rgba(0,0,0,0.3), 0 8px 10px -4px rgba(0,0,0,0.2) !important;
+        border-color: rgba(255, 255, 255, 0.2) !important;
+        background: rgba(30, 41, 59, 0.8) !important;
     }
 
     /* Enterprise Buttons */
@@ -93,6 +96,96 @@ st.markdown("""
     .badge-available { background-color: #dcfce7; color: #166534; }
     .badge-discounted { background-color: #fef08a; color: #854d0e; }
     .badge-urgent { background-color: #fee2e2; color: #991b1b; }
+    
+    /* --- Crazy Ambient Animation Background --- */
+    @keyframes ambientGlow {
+        0% { box-shadow: 0 0 40px rgba(16, 185, 129, 0.1); }
+        50% { box-shadow: 0 0 80px rgba(14, 165, 233, 0.2); }
+        100% { box-shadow: 0 0 40px rgba(16, 185, 129, 0.1); }
+    }
+    .block-container {
+        animation: ambientGlow 6s infinite alternate;
+        border-radius: 20px;
+        padding-top: 3.5rem !important;
+        padding-bottom: 50px !important;
+        background: rgba(15, 23, 42, 0.2);
+        backdrop-filter: blur(10px);
+    }
+
+    /* Entry Animation for overall items */
+    @keyframes slideUpFade {
+        from { opacity: 0; transform: translateY(40px) scale(0.98); }
+        to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+    [data-testid="stVerticalBlockBorderWrapper"], form, div[data-testid="stRadio"] {
+        animation: slideUpFade 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;
+    }
+    
+    /* --- Classy Central Menu --- */
+    [data-testid="stSidebar"] { display: none !important; }
+    [data-testid="collapsedControl"] { display: none !important; }
+
+    div[data-testid="stRadio"] {
+        background: linear-gradient(135deg, rgba(30, 41, 59, 0.7) 0%, rgba(15, 23, 42, 0.9) 100%);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        border: 1px solid rgba(16, 185, 129, 0.3);
+        border-radius: 40px;
+        padding: 6px 16px;
+        box-shadow: 0 8px 32px 0 rgba(16, 185, 129, 0.15);
+        margin: 20px auto 40px auto !important;
+        width: max-content;
+        display: flex;
+        justify-content: center;
+        transition: all 0.3s ease;
+    }
+    div[data-testid="stRadio"]:hover {
+        box-shadow: 0 12px 40px 0 rgba(16, 185, 129, 0.3);
+        transform: translateY(-2px);
+    }
+    /* Force centering of the parent wrapper */
+    .element-container:has(div[data-testid="stRadio"]) {
+        display: flex;
+        justify-content: center;
+        width: 100%;
+    }
+    div[data-testid="stRadio"] > div[role="radiogroup"] {
+        display: flex;
+        flex-direction: row;
+        justify-content: center !important;
+        align-items: center;
+        gap: 15px !important;
+    }
+    /* Hide the default radio circles */
+    div[data-testid="stRadio"] div[role="radio"] {
+        display: none !important;
+    }
+    div[data-testid="stRadio"] label > div:first-child {
+        display: none !important;
+    }
+    /* Style the labels */
+    div[data-testid="stRadio"] label {
+        padding: 8px 20px !important;
+        border-radius: 20px;
+        transition: all 0.3s ease;
+    }
+    div[data-testid="stRadio"] label p {
+        font-size: 1.05rem !important;
+        font-weight: 800 !important;
+        color: #94a3b8 !important;
+        margin: 0 !important;
+        transition: all 0.3s ease-in-out !important;
+    }
+    /* Active State Hover */
+    div[data-testid="stRadio"] label[data-checked="true"] {
+        background: rgba(16, 185, 129, 0.15);
+    }
+    div[data-testid="stRadio"] label[data-checked="true"] p, 
+    div[data-testid="stRadio"] label:hover p {
+        color: #10b981 !important;
+        text-shadow: 0 0 12px rgba(16, 185, 129, 0.5);
+        transform: translateY(-2px) scale(1.05);
+    }
 </style>
 """, unsafe_allow_html=True)
 
@@ -102,7 +195,7 @@ def get_db_connection():
         conn = mysql.connector.connect(
             host=os.getenv("MYSQL_HOST", "localhost"),
             user=os.getenv("MYSQL_USER", "root"),
-            password=os.getenv("MYSQL_PASSWORD", ""),
+            password=os.getenv("MYSQL_PASSWORD", "root1234"),
             database=os.getenv("MYSQL_DB", "surplus_food_db")
         )
         return conn
@@ -111,7 +204,12 @@ def get_db_connection():
         return None
 
 # --- Main Header ---
-st.title("Nutrilink | Operations Dashboard")
+head_col1, head_col2, head_col3 = st.columns([4, 2, 4])
+with head_col2:
+    try:
+        st.image("logo.png", use_container_width=True)
+    except Exception:
+        pass
 st.divider()
 
 # --- 1. Top-Level Impact KPI Cards ---
@@ -139,18 +237,18 @@ if conn:
     conn.close()
 st.divider()
 
-# --- 2. Role Switcher in Sidebar ---
-st.sidebar.title("System Navigation")
-role = st.sidebar.radio("Active Module:", [
-    "Vendor Portal",
-    "Receiver Marketplace",
-    "Database Inspector"
-])
+# --- 2. Animated Bottom Menu ---
+m_col1, m_col2, m_col3 = st.columns([1, 1.5, 1])
+with m_col2:
+    role = st.radio("Navigation", [
+        "Vendor",
+        "Receiver",
+        "Database"
+    ], horizontal=True, label_visibility="collapsed")
 
 # --- Views ---
-if role == "Vendor Portal":
-    st.header("Vendor Intake Portal")
-    st.write("Securely post commercial surplus inventory for immediate redistribution routing.")
+if role == "Vendor":
+    st.header("Vendor Portal")
     
     with st.form("donor_entry_form", clear_on_submit=True):
         st.subheader("1. Organization Details")
@@ -160,16 +258,17 @@ if role == "Vendor Portal":
         with c2:
             biz_type = st.selectbox("Business Type", ["Restaurant", "Bakery", "Caterer", "Supermarket"])
         with c3:
-            zone = st.text_input("Operating Zone / Address", placeholder="e.g. Dhanmondi")
+            zone = st.text_input("Operating Zone / Address", placeholder="e.g. United City")
             
         st.subheader("2. Inventory Specifics")
+        custom_batch_id = st.number_input("Assign Custom Batch ID (Number)", min_value=0, step=1, value=0)
         c4, c5 = st.columns(2)
         with c4:
             item_name = st.text_input("Commodity Name", placeholder="Enter item description")
-            portions = st.number_input("Available Portions", min_value=1, step=1, value=10)
+            portions = st.number_input("Available Portions", min_value=0, step=1, value=0)
         with c5:
-            original_price = st.number_input("Standard Price per Unit (BDT)", min_value=0.0, step=10.0, value=150.0)
-            expiry_hours = st.slider("Quality Assurance Window (Hours)", min_value=1, max_value=48, value=12)
+            original_price = st.number_input("Standard Price per Unit (BDT)", min_value=0.0, step=10.0, value=0.0)
+            expiry_hours = st.slider("Quality Assurance Window (Hours)", min_value=0, max_value=48, value=0)
             
         submitted = st.form_submit_button("Authorize and Publish Batch", use_container_width=True)
         
@@ -200,8 +299,8 @@ if role == "Vendor Portal":
                         # Insert batch
                         expiry_time = datetime.now() + timedelta(hours=expiry_hours)
                         cursor.execute(
-                            "INSERT INTO food_batches (vendor_id, item_name, quantity, original_price, expiry_time, batch_status) VALUES (%s, %s, %s, %s, %s, %s)",
-                            (vendor_id, item_name, portions, original_price, expiry_time.strftime('%Y-%m-%d %H:%M:%S'), 'Available')
+                            "INSERT INTO food_batches (batch_id, vendor_id, item_name, quantity, original_price, expiry_time, batch_status) VALUES (%s, %s, %s, %s, %s, %s, %s)",
+                            (custom_batch_id, vendor_id, item_name, portions, original_price, expiry_time.strftime('%Y-%m-%d %H:%M:%S'), 'Available')
                         )
                         
                         conn.commit()
@@ -209,12 +308,45 @@ if role == "Vendor Portal":
                         st.success(f"System Update: {portions} units of '{item_name}' successfully committed to the redistribution network.")
                     except Error as e:
                         conn.rollback()
-                        st.error(f"Failed to publish batch: {e.msg}")
+                        if e.errno == 1062:
+                            st.error(f"Batch ID {custom_batch_id} already exists. Please pick a different number.")
+                        else:
+                            st.error(f"Failed to publish batch: {e.msg}")
                     finally:
                         cursor.close()
                         conn.close()
 
-elif role == "Receiver Marketplace":
+    # --- Week 3 Requirement: DELETE Operation ---
+    st.divider()
+    st.subheader("3. Batch Management (Delete)")
+    with st.form("delete_batch_form"):
+        del_batch_id = st.number_input("Enter Batch ID to Remove", min_value=0, step=1, value=0)
+        del_submitted = st.form_submit_button("Delete Batch", type="primary")
+        
+        if del_submitted:
+            del_conn = get_db_connection()
+            if del_conn:
+                try:
+                    del_cursor = del_conn.cursor()
+                    del_conn.start_transaction()
+                    
+                    # Execute DELETE statement
+                    del_cursor.execute("DELETE FROM food_batches WHERE batch_id = %s", (del_batch_id,))
+                    
+                    if del_cursor.rowcount > 0:
+                        del_conn.commit()
+                        st.success(f"Batch {del_batch_id} was successfully deleted from the system.")
+                    else:
+                        del_conn.rollback()
+                        st.warning(f"Batch {del_batch_id} not found.")
+                except Error as e:
+                    del_conn.rollback()
+                    st.error(f"Failed to delete batch: {e.msg}")
+                finally:
+                    del_cursor.close()
+                    del_conn.close()
+
+elif role == "Receiver":
     st.header("Receiver Marketplace")
     
     conn = get_db_connection()
@@ -229,10 +361,9 @@ elif role == "Receiver Marketplace":
             st.warning("No receivers found in the database. Please add a receiver to claim food.")
         else:
             receiver_opts = {f"{r['org_name']} (Quota: {r['daily_quota_limit']})": r['receiver_id'] for r in receivers}
-            selected_receiver_name = st.sidebar.selectbox("Act As Receiver:", list(receiver_opts.keys()))
+            selected_receiver_name = st.selectbox("Receiver:", list(receiver_opts.keys()))
             active_receiver_id = receiver_opts[selected_receiver_name]
         
-            st.subheader("Inventory Query Parameters")
             f_col1, f_col2, f_col3 = st.columns(3)
             with f_col1:
                 search_q = st.text_input("Query by Item", placeholder="Search parameters...")
@@ -309,14 +440,16 @@ elif role == "Receiver Marketplace":
                                 st.markdown('<span class="badge badge-available">Available</span>', unsafe_allow_html=True)
                             
                             st.markdown(f"<br>**Stock:** {item['quantity']} units", unsafe_allow_html=True)
-                            if float(item['current_price']) < float(item['original_price']):
-                                st.markdown(f"**Value:** <s>{item['original_price']:.2f}</s> **{item['current_price']:.2f} BDT**")
+                            if float(item['current_price']) == 0:
+                                st.markdown("100% Free / Sponsored")
+                            elif float(item['current_price']) < float(item['original_price']):
+                                st.markdown(f"Discounted: {item['current_price']:.2f} BDT (Standard: {item['original_price']:.2f})")
                             else:
-                                st.markdown(f"**Value:** {item['current_price']:.2f} BDT")
+                                st.markdown(f"Price: {item['current_price']:.2f} BDT")
                             
                         with col3:
                             with st.expander("Process Claim", expanded=False):
-                                claim_qty = st.number_input("Request Volume", min_value=1, max_value=item['quantity'], value=1, key=f"qty_{item['batch_id']}")
+                                claim_qty = st.number_input("Request Volume", min_value=0, max_value=item['quantity'], value=0, key=f"qty_{item['batch_id']}")
                                 if st.button("Execute Transaction", type="primary", key=f"claim_{item['batch_id']}", use_container_width=True):
                                     try:
                                         # Use Stored Procedure for Safe Claim Transaction
@@ -329,7 +462,7 @@ elif role == "Receiver Marketplace":
         cursor.close()
         conn.close()
 
-elif role == "Database Inspector":
+elif role == "Database":
     st.header("Schema & State Inspector")
     st.write("Real-time read replica of the internal relational table structures.")
     
@@ -366,5 +499,5 @@ elif role == "Database Inspector":
                 st.dataframe(load_table("vw_active_batches"), use_container_width=True)
             except Error as e:
                 st.warning(f"View not found. Did you run 03_automation.sql? Error: {e}")
-            
+        
         conn.close()
