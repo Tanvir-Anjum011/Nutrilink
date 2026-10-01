@@ -19,13 +19,13 @@ SELECT
     b.expiry_time,
     b.batch_status,
     CASE 
-        WHEN b.expiry_time <= NOW() THEN 0
-        WHEN TIMESTAMPDIFF(MINUTE, NOW(), b.expiry_time) < 300 THEN ROUND(b.original_price * 0.5, 2)
-        ELSE b.original_price
+        WHEN b.expiry_time <= UTC_TIMESTAMP() THEN 0
+        WHEN TIMESTAMPDIFF(MINUTE, UTC_TIMESTAMP(), b.expiry_time) < 300 THEN GREATEST(ROUND(b.original_price * 0.5, 2), 0)
+        ELSE GREATEST(b.original_price, 0)
     END AS current_price
 FROM food_batches b
 JOIN vendors v ON b.vendor_id = v.vendor_id
-WHERE b.quantity > 0 AND b.expiry_time > NOW();
+WHERE b.quantity > 0 AND b.expiry_time > UTC_TIMESTAMP();
 
 -- -----------------------------------------------------------------------------
 -- 2. Automated Safety Shield Trigger
@@ -43,7 +43,7 @@ BEGIN
     FROM food_batches 
     WHERE batch_id = NEW.batch_id;
     
-    IF v_expiry_time <= NOW() THEN
+    IF v_expiry_time <= UTC_TIMESTAMP() THEN
         SIGNAL SQLSTATE '45000' 
         SET MESSAGE_TEXT = 'Cannot claim expired food batches. Safety Shield triggered.';
     END IF;
@@ -80,7 +80,7 @@ BEGIN
     -- Calculate total portions claimed today by this receiver
     SELECT IFNULL(SUM(claimed_quantity), 0) INTO v_claimed_today 
     FROM claims 
-    WHERE receiver_id = p_receiver_id AND DATE(claim_timestamp) = CURDATE();
+    WHERE receiver_id = p_receiver_id AND DATE(claim_timestamp) = DATE(UTC_TIMESTAMP());
     
     -- Enforce daily claim cap
     IF (v_claimed_today + p_quantity) > v_daily_quota THEN
